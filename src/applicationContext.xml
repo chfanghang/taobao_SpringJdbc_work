@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+                           http://www.springframework.org/schema/beans/spring-beans.xsd
+                           http://www.springframework.org/schema/context
+                           http://www.springframework.org/schema/context/spring-context.xsd
+                           http://www.springframework.org/schema/tx
+                           http://www.springframework.org/schema/tx/spring-tx.xsd">
+
+    <!-- 引入外部属性文件 -->
+    <!-- 加载数据库配置文件（路径正确） -->
+    <context:property-placeholder location="classpath:jdbc.properties"/>
+
+    <!-- 组件扫描：自动扫描Dao层（@Repository）、Service层（@Service）等注解组件 -->
+    <!-- 扫描范围包含Dao类所在的包：com.fhedu.springjdbc.Dao -->
+    <context:component-scan base-package="com.fhedu.springjdbc" />
+
+    <!-- 配置C3P0数据库连接池 -->
+    <bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource">
+        <property name="user" value="${jdbc.user}" />
+        <property name="password" value="${jdbc.password}" />
+        <property name="driverClass" value="${jdbc.driver}" />
+        <property name="jdbcUrl" value="${jdbc.url}" />
+        <!-- 连接池参数 -->
+        <property name="initialPoolSize" value="${c3p0.initialPoolSize:5}" />
+        <property name="maxPoolSize" value="${c3p0.maxPoolSize:20}" />
+        <property name="minPoolSize" value="${c3p0.minPoolSize:3}" />
+        <property name="acquireIncrement" value="${c3p0.acquireIncrement:2}" />
+        <property name="maxIdleTime" value="${c3p0.maxIdleTime:1800}" />
+    </bean>
+
+    <!-- 配置JdbcTemplate（会被自动注入到Dao类中） -->
+    <bean id="jdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate">
+        <property name="dataSource" ref="dataSource" />
+    </bean>
+
+    <!-- 配置NamedParameterJdbcTemplate（可选，扩展功能） -->
+    <bean id="namedParameterJdbcTemplate" class="org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate">
+        <constructor-arg name="dataSource" ref="dataSource" />
+    </bean>
+
+    <!-- 事务管理器 -->
+    <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource" ref="dataSource" />
+    </bean>
+
+    <!-- 开启注解事务 -->
+    <tx:annotation-driven transaction-manager="transactionManager" />
+
+    <!-- 去掉所有Dao的<bean>配置！依赖组件扫描自动注册 -->
+    <!-- 原因：Dao类已加@Repository，且在component-scan的扫描范围内，Spring会自动创建实例 -->
+    <!-- 同时，Dao类中的@Resource JdbcTemplate会自动匹配上面定义的jdbcTemplate bean -->
+
+</beans>

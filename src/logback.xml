@@ -1,0 +1,12 @@
+<configuration>
+    <!-- 只输出 INFO 及以上级别日志（屏蔽 DEBUG） -->
+    <root level="INFO">
+        <appender-ref ref="CONSOLE" />
+        <appender-ref ref="FILE" />
+    </root>
+
+    <!-- 针对特定包细化配置（如 Dao 层只输出 WARN 及以上） -->
+    <logger name="com.fhedu.springjdbc.Dao" level="WARN" additivity="false">
+        <appender-ref ref="CONSOLE" />
+    </logger>
+</configuration>
